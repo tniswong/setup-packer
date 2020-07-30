@@ -50,77 +50,17 @@ steps:
 
 - run: packer verify
 
-- id: plan
-  run: packer plan -no-color
+- id: verify
+  run: packer verify
 
-- run: echo ${{ steps.plan.outputs.stdout }}
-- run: echo ${{ steps.plan.outputs.stderr }}
-- run: echo ${{ steps.plan.outputs.exitcode }}
-```
-
-Outputs can be used in subsequent steps to comment on the pull request:
-
-```yaml
-defaults:
-  run:
-    working-directory: ${{ env.tf_actions_working_dir }}
-steps:
-- uses: actions/checkout@v2
-- uses: tniswong/setup-packer@v1
-
-- name: Packer fmt
-  id: fmt
-  run: packer fmt
-  continue-on-error: true
-
-- name: Packer Init
-  id: init
-  run: packer init
-
-- name: Packer Validate
-  id: validate
-  run: packer validate -no-color
-
-- name: Packer Plan
-  id: plan
-  run: packer plan -no-color
-  continue-on-error: true
-
-- uses: actions/github-script@0.9.0
-  if: github.event_name == 'pull_request'
-  env:
-    PLAN: "packer\n${{ steps.plan.outputs.stdout }}"
-  with:
-    github-token: ${{ secrets.GITHUB_TOKEN }}
-    script: |
-      const output = `#### Packer Format and Style 🖌\`${{ steps.fmt.outcome }}\`
-      #### Packer Initialization ⚙️\`${{ steps.init.outcome }}\`
-      #### Packer Validation 🤖${{ steps.validate.outputs.stdout }}
-      #### Packer Plan 📖\`${{ steps.plan.outcome }}\`
-      
-      <details><summary>Show Plan</summary>
-      
-      \`\`\`${process.env.PLAN}\`\`\`
-      
-      </details>
-      
-      *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`, Working Directory: \`${{ env.tf_actions_working_dir }}\`, Workflow: \`${{ github.workflow }}\`*`;
-        
-      github.issues.createComment({
-        issue_number: context.issue.number,
-        owner: context.repo.owner,
-        repo: context.repo.repo,
-        body: output
-      })
+- run: echo ${{ steps.verify.outputs.stdout }}
+- run: echo ${{ steps.verify.outputs.stderr }}
+- run: echo ${{ steps.verify.outputs.exitcode }}
 ```
 
 ## Inputs
 
 The following inputs are supported.
-
-- `cli_config_credentials_hostname` - (optional) The hostname of a Packer Cloud/Enterprise instance to place within the credentials block of the Packer CLI configuration file. Defaults to `app.packer.io`.
-
-- `cli_config_credentials_token` - (optional) The API token for a Packer Cloud/Enterprise instance to place within the credentials block of the Packer CLI configuration file.
 
 - `packer_version` - (optional) The version of Packer CLI to install. A value of `latest` will install the latest version of Packer CLI. Defaults to `latest`.
 
