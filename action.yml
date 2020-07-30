@@ -1,20 +1,13 @@
-name: 'HashiCorp - Setup Terraform'
-description: 'Sets up Terraform CLI in your GitHub Actions workflow.'
-author: 'HashiCorp, Inc.'
+name: 'Setup Packer'
+description: 'Sets up Packer CLI in your GitHub Actions workflow.'
+author: 'HashiCorp, Inc. (Forked by Todd Niswonger)'
 inputs:
-  cli_config_credentials_hostname:
-    description: 'The hostname of a Terraform Cloud/Enterprise instance to place within the credentials block of the Terraform CLI configuration file. Defaults to `app.terraform.io`.'
-    default: 'app.terraform.io'
-    required: false
-  cli_config_credentials_token:
-    description: 'The API token for a Terraform Cloud/Enterprise instance to place within the credentials block of the Terraform CLI configuration file.'
-    required: false
-  terraform_version:
-    description: 'The version of Terraform CLI to install. A value of `latest` will install the latest version of Terraform CLI. Defaults to `latest`.'
+  packer_version:
+    description: 'The version of Packer CLI to install. A value of `latest` will install the latest version of Packer CLI. Defaults to `latest`.'
     default: 'latest'
     required: false
-  terraform_wrapper:
-    description: 'Whether or not to install a wrapper to wrap subsequent calls of the `terraform` binary and expose its STDOUT, STDERR, and exit code as outputs named `stdout`, `stderr`, and `exitcode` respectively. Defaults to `true`.'
+  packer_wrapper:
+    description: 'Whether or not to install a wrapper to wrap subsequent calls of the `packer` binary and expose its STDOUT, STDERR, and exit code as outputs named `stdout`, `stderr`, and `exitcode` respectively. Defaults to `true`.'
     default: 'true'
     required: false
 runs:

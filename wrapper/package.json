@@ -1,12 +1,12 @@
 {
-  "name": "terraform.js",
+  "name": "packer.js",
   "version": "0.0.0",
-  "description": "JavaScript wrapper for terraform binary",
-  "main": "terraform.js",
+  "description": "JavaScript wrapper for packer binary",
+  "main": "packer.js",
   "scripts": {
     "test": "semistandard --env jest && jest --coverage",
     "lint": "semistandard --env jest --fix",
-    "build": "ncc build terraform.js --out dist"
+    "build": "ncc build packer.js --out dist"
   },
   "author": "",
   "dependencies": {

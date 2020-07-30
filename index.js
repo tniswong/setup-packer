@@ -1,6 +1,6 @@
 const core = require('@actions/core');
 
-const setup = require('./lib/setup-terraform');
+const setup = require('./lib/setup-packer');
 
 (async () => {
   try {

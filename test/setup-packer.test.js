@@ -6,7 +6,6 @@ jest.mock('os');
 
 const os = require('os');
 const path = require('path');
-const fs = require('fs').promises;
 
 const io = require('@actions/io');
 const core = require('@actions/core');
@@ -14,7 +13,7 @@ const tc = require('@actions/tool-cache');
 const nock = require('nock');
 
 const json = require('./index.json');
-const setup = require('../lib/setup-terraform');
+const setup = require('../lib/setup-packer');
 
 // Overwrite defaults
 // core.debug = jest
@@ -22,7 +21,7 @@ const setup = require('../lib/setup-terraform');
 // core.error = jest
 //   .fn(console.error);
 
-describe('Setup Terraform', () => {
+describe('Setup Packer', () => {
   const HOME = process.env.HOME;
   const APPDATA = process.env.APPDATA;
 
@@ -37,16 +36,12 @@ describe('Setup Terraform', () => {
     process.env.APPDATA = APPDATA;
   });
 
-  test('gets specific version and adds token and hostname on linux, amd64', async () => {
+  test('gets specific version on linux, amd64', async () => {
     const version = '0.1.1';
-    const credentialsHostname = 'app.terraform.io';
-    const credentialsToken = 'asdfjkl';
 
     core.getInput = jest
       .fn()
-      .mockReturnValueOnce(version)
-      .mockReturnValueOnce(credentialsHostname)
-      .mockReturnValueOnce(credentialsToken);
+      .mockReturnValueOnce(version);
 
     tc.downloadTool = jest
       .fn()
@@ -65,30 +60,21 @@ describe('Setup Terraform', () => {
       .mockReturnValue('amd64');
 
     nock('https://releases.hashicorp.com')
-      .get('/terraform/index.json')
+      .get('/packer/index.json')
       .reply(200, json);
 
     await setup();
 
     // downloaded CLI has been added to path
     expect(core.addPath).toHaveBeenCalled();
-
-    // expect credentials are in ${HOME}.terraformrc
-    const creds = await fs.readFile(`${process.env.HOME}/.terraformrc`, { encoding: 'utf8' });
-    expect(creds.indexOf(credentialsHostname)).toBeGreaterThan(-1);
-    expect(creds.indexOf(credentialsToken)).toBeGreaterThan(-1);
   });
 
-  test('gets specific version and adds token and hostname on windows, 386', async () => {
+  test('gets specific version on windows, 386', async () => {
     const version = '0.1.1';
-    const credentialsHostname = 'app.terraform.io';
-    const credentialsToken = 'asdfjkl';
 
     core.getInput = jest
       .fn()
-      .mockReturnValueOnce(version)
-      .mockReturnValueOnce(credentialsHostname)
-      .mockReturnValueOnce(credentialsToken);
+      .mockReturnValueOnce(version);
 
     tc.downloadTool = jest
       .fn()
@@ -107,30 +93,21 @@ describe('Setup Terraform', () => {
       .mockReturnValue('386');
 
     nock('https://releases.hashicorp.com')
-      .get('/terraform/index.json')
+      .get('/packer/index.json')
       .reply(200, json);
 
     await setup();
 
     // downloaded CLI has been added to path
     expect(core.addPath).toHaveBeenCalled();
-
-    // expect credentials are in ${HOME}.terraformrc
-    const creds = await fs.readFile(`${process.env.HOME}/terraform.rc`, { encoding: 'utf8' });
-    expect(creds.indexOf(credentialsHostname)).toBeGreaterThan(-1);
-    expect(creds.indexOf(credentialsToken)).toBeGreaterThan(-1);
   });
 
-  test('gets latest version and adds token and hostname on linux, amd64', async () => {
+  test('gets latest version on linux, amd64', async () => {
     const version = 'latest';
-    const credentialsHostname = 'app.terraform.io';
-    const credentialsToken = 'asdfjkl';
 
     core.getInput = jest
       .fn()
-      .mockReturnValueOnce(version)
-      .mockReturnValueOnce(credentialsHostname)
-      .mockReturnValueOnce(credentialsToken);
+      .mockReturnValueOnce(version);
 
     tc.downloadTool = jest
       .fn()
@@ -149,33 +126,24 @@ describe('Setup Terraform', () => {
       .mockReturnValue('amd64');
 
     nock('https://releases.hashicorp.com')
-      .get('/terraform/index.json')
+      .get('/packer/index.json')
       .reply(200, json);
 
     await setup();
 
     // downloaded CLI has been added to path
     expect(core.addPath).toHaveBeenCalled();
-
-    // expect credentials are in ${HOME}.terraformrc
-    const creds = await fs.readFile(`${process.env.HOME}/.terraformrc`, { encoding: 'utf8' });
-    expect(creds.indexOf(credentialsHostname)).toBeGreaterThan(-1);
-    expect(creds.indexOf(credentialsToken)).toBeGreaterThan(-1);
   });
 
   test('fails when metadata cannot be downloaded', async () => {
     const version = 'latest';
-    const credentialsHostname = 'app.terraform.io';
-    const credentialsToken = 'asdfjkl';
 
     core.getInput = jest
       .fn()
-      .mockReturnValueOnce(version)
-      .mockReturnValueOnce(credentialsHostname)
-      .mockReturnValueOnce(credentialsToken);
+      .mockReturnValueOnce(version);
 
     nock('https://releases.hashicorp.com')
-      .get('/terraform/index.json')
+      .get('/packer/index.json')
       .reply(404);
 
     try {
@@ -187,17 +155,13 @@ describe('Setup Terraform', () => {
 
   test('fails when specific version cannot be found', async () => {
     const version = '0.9.9';
-    const credentialsHostname = 'app.terraform.io';
-    const credentialsToken = 'asdfjkl';
 
     core.getInput = jest
       .fn()
-      .mockReturnValueOnce(version)
-      .mockReturnValueOnce(credentialsHostname)
-      .mockReturnValueOnce(credentialsToken);
+      .mockReturnValueOnce(version);
 
     nock('https://releases.hashicorp.com')
-      .get('/terraform/index.json')
+      .get('/packer/index.json')
       .reply(200, json);
 
     try {
@@ -209,17 +173,13 @@ describe('Setup Terraform', () => {
 
   test('fails when CLI for os and architecture cannot be found', async () => {
     const version = '0.1.1';
-    const credentialsHostname = 'app.terraform.io';
-    const credentialsToken = 'asdfjkl';
 
     core.getInput = jest
       .fn()
-      .mockReturnValueOnce(version)
-      .mockReturnValueOnce(credentialsHostname)
-      .mockReturnValueOnce(credentialsToken);
+      .mockReturnValueOnce(version);
 
     nock('https://releases.hashicorp.com')
-      .get('/terraform/index.json')
+      .get('/packer/index.json')
       .reply(200, json);
 
     tc.downloadTool = jest
@@ -247,17 +207,13 @@ describe('Setup Terraform', () => {
 
   test('fails when CLI cannot be downloaded', async () => {
     const version = '0.1.1';
-    const credentialsHostname = 'app.terraform.io';
-    const credentialsToken = 'asdfjkl';
 
     core.getInput = jest
       .fn()
-      .mockReturnValueOnce(version)
-      .mockReturnValueOnce(credentialsHostname)
-      .mockReturnValueOnce(credentialsToken);
+      .mockReturnValueOnce(version);
 
     nock('https://releases.hashicorp.com')
-      .get('/terraform/index.json')
+      .get('/packer/index.json')
       .reply(200, json);
 
     tc.downloadTool = jest
@@ -285,8 +241,6 @@ describe('Setup Terraform', () => {
 
   test('installs wrapper on linux', async () => {
     const version = '0.1.1';
-    const credentialsHostname = 'app.terraform.io';
-    const credentialsToken = 'asdfjkl';
     const wrapperPath = path.resolve([__dirname, '..', 'wrapper', 'dist', 'index.js'].join(path.sep));
 
     const ioMv = jest.spyOn(io, 'mv')
@@ -297,8 +251,6 @@ describe('Setup Terraform', () => {
     core.getInput = jest
       .fn()
       .mockReturnValueOnce(version)
-      .mockReturnValueOnce(credentialsHostname)
-      .mockReturnValueOnce(credentialsToken)
       .mockReturnValueOnce('true');
 
     tc.downloadTool = jest
@@ -318,19 +270,17 @@ describe('Setup Terraform', () => {
       .mockReturnValue('amd64');
 
     nock('https://releases.hashicorp.com')
-      .get('/terraform/index.json')
+      .get('/packer/index.json')
       .reply(200, json);
 
     await setup();
 
-    expect(ioMv).toHaveBeenCalledWith(`file${path.sep}terraform`, `file${path.sep}terraform-bin`);
-    expect(ioCp).toHaveBeenCalledWith(wrapperPath, `file${path.sep}terraform`);
+    expect(ioMv).toHaveBeenCalledWith(`file${path.sep}packer`, `file${path.sep}packer-bin`);
+    expect(ioCp).toHaveBeenCalledWith(wrapperPath, `file${path.sep}packer`);
   });
 
   test('installs wrapper on windows', async () => {
     const version = '0.1.1';
-    const credentialsHostname = 'app.terraform.io';
-    const credentialsToken = 'asdfjkl';
     const wrapperPath = path.resolve([__dirname, '..', 'wrapper', 'dist', 'index.js'].join(path.sep));
 
     const ioMv = jest.spyOn(io, 'mv')
@@ -341,8 +291,6 @@ describe('Setup Terraform', () => {
     core.getInput = jest
       .fn()
       .mockReturnValueOnce(version)
-      .mockReturnValueOnce(credentialsHostname)
-      .mockReturnValueOnce(credentialsToken)
       .mockReturnValueOnce('true');
 
     tc.downloadTool = jest
@@ -362,12 +310,12 @@ describe('Setup Terraform', () => {
       .mockReturnValue('386');
 
     nock('https://releases.hashicorp.com')
-      .get('/terraform/index.json')
+      .get('/packer/index.json')
       .reply(200, json);
 
     await setup();
 
-    expect(ioMv).toHaveBeenCalledWith(`file${path.sep}terraform.exe`, `file${path.sep}terraform-bin.exe`);
-    expect(ioCp).toHaveBeenCalledWith(wrapperPath, `file${path.sep}terraform`);
+    expect(ioMv).toHaveBeenCalledWith(`file${path.sep}packer.exe`, `file${path.sep}packer-bin.exe`);
+    expect(ioCp).toHaveBeenCalledWith(wrapperPath, `file${path.sep}packer`);
   });
 });

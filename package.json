@@ -1,7 +1,7 @@
 {
-  "name": "setup-terraform",
+  "name": "setup-packer",
   "version": "1.0.0",
-  "description": "Setup Terraform CLI for GitHub Actions",
+  "description": "Setup Packer CLI for GitHub Actions",
   "main": "index.js",
   "scripts": {
     "test": "cd wrapper && npm test && cd .. && semistandard --env jest && jest --coverage",

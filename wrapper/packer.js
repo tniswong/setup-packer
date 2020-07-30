@@ -4,17 +4,17 @@ const core = require('@actions/core');
 const { exec } = require('@actions/exec');
 
 const OutputListener = require('./lib/output-listener');
-const pathToCLI = require('./lib/terraform-bin');
+const pathToCLI = require('./lib/packer-bin');
 
-async function checkTerraform () {
-  // Setting check to `true` will cause `which` to throw if terraform isn't found
+async function checkPacker () {
+  // Setting check to `true` will cause `which` to throw if packer isn't found
   const check = true;
   return io.which(pathToCLI, check);
 }
 
 (async () => {
   // This will fail if Terraform isn't found, which is what we want
-  await checkTerraform();
+  await checkPacker();
 
   // Create listeners to receive output (in memory) as well
   const stdout = new OutputListener();
@@ -24,14 +24,14 @@ async function checkTerraform () {
     stderr: stderr.listener
   };
 
-  // Execute terraform and capture output
+  // Execute packer and capture output
   const args = process.argv.slice(2);
   const options = {
     listeners,
     ignoreReturnCode: true
   };
   const exitCode = await exec(pathToCLI, args, options);
-  core.debug(`Terraform exited with code ${exitCode}.`);
+  core.debug(`Packer exited with code ${exitCode}.`);
   core.debug(`stdout: ${stdout.contents}`);
   core.debug(`stderr: ${stderr.contents}`);
   core.debug(`exitcode: ${exitCode}`);
@@ -43,6 +43,6 @@ async function checkTerraform () {
 
   // A non-zero exitCode is considered an error
   if (exitCode !== 0) {
-    core.setFailed(`Terraform exited with code ${exitCode}.`);
+    core.setFailed(`Packer exited with code ${exitCode}.`);
   }
 })();

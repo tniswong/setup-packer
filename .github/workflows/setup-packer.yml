@@ -1,0 +1,113 @@
+name: 'Setup Packer'
+
+on:
+  push:
+    branches:
+    - master
+  pull_request:
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  packer-versions:
+    name: 'Packer Versions' 
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        packer-versions: [0.11.14, latest]
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Setup Packer - ${{ matrix['packer-versions'] }}
+      uses: ./
+      with:
+        packer_version: ${{ matrix['packer-versions'] }}
+    
+    - name: Validate Teraform Version - ${{ matrix['packer-versions'] }}
+      if: ${{ matrix['packer-versions'] != 'latest' }}
+      run: packer version | grep ${{ matrix['packer-versions']}}
+
+    - name: Validate Teraform Version - ${{ matrix['packer-versions'] }}
+      if: ${{ matrix['packer-versions'] == 'latest' }}
+      run: packer version | grep 'Packer v'
+  
+  packer-versions-no-wrapper:
+    name: 'Packer Versions No Wrapper' 
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        packer-versions: [0.11.14, latest]
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+  
+    - name: Setup Packer (no wrapper) - ${{ matrix['packer-versions'] }}
+      uses: ./
+      with:
+        packer_version: ${{ matrix['packer-versions'] }}
+        packer_wrapper: false
+
+    - name: Validate Teraform Version - ${{ matrix['packer-versions'] }}
+      if: ${{ matrix['packer-versions'] != 'latest' }}
+      run: packer version | grep ${{ matrix['packer-versions']}}
+
+    - name: Validate Teraform Version - ${{ matrix['packer-versions'] }}
+      if: ${{ matrix['packer-versions'] == 'latest' }}
+      run: packer version | grep 'Packer v'
+  
+  packer-arguments:
+    name: 'Packer Arguments' 
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Setup Packer
+      uses: ./
+    
+    - name: Check No Arguments
+      run: packer || exit 0
+    
+    - name: Check Single Argument
+      run: packer help || exit 0
+    
+    - name: Check Single Argument Hyphen
+      run: packer -help
+    
+    - name: Check Single Argument Double Hyphen
+      run: packer --help
+  
+  packer-arguments-no-wrapper:
+    name: 'Packer Arguments No Wrapper' 
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Setup Packer
+      uses: ./
+      with:
+        packer_wrapper: false
+    
+    - name: Check No Arguments
+      run: packer || exit 0
+    
+    - name: Check Single Argument
+      run: packer help || exit 0
+    
+    - name: Check Single Argument Hyphen
+      run: packer -help
+    
+    - name: Check Single Argument Double Hyphen
+      run: packer --help

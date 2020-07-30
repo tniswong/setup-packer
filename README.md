@@ -1,64 +1,44 @@
-# setup-terraform
+# setup-packer
 
 <p align="left">
-  <a href="https://github.com/hashicorp/setup-terraform/actions"><img alt="Continuous Integration" src="https://github.com/hashicorp/setup-terraform/workflows/Continuous%20Integration/badge.svg" /></a>
-  <a href="https://github.com/hashicorp/setup-terraform/actions"><img alt="Setup Terraform" src="https://github.com/hashicorp/setup-terraform/workflows/Setup%20Terraform/badge.svg" /></a>
+  <a href="https://github.com/tniswong/setup-packer/actions"><img alt="Continuous Integration" src="https://github.com/tniswong/setup-packer/workflows/Continuous%20Integration/badge.svg" /></a>
+  <a href="https://github.com/tniswong/setup-packer/actions"><img alt="Setup Packer" src="https://github.com/tniswong/setup-packer/workflows/Setup%20Packer/badge.svg" /></a>
 </p>
 
-The `hashicorp/setup-terraform` action is a JavaScript action that sets up Terraform CLI in your GitHub Actions workflow by:
+The `tniswong/setup-packer` action is a JavaScript action that sets up Packer CLI in your GitHub Actions workflow by:
 
-- Downloading a specific version of Terraform CLI and adding it to the `PATH`.
-- Configuring the [Terraform CLI configuration file](/docs/commands/cli-config.html) with a Terraform Cloud/Enterprise hostname and API token.
-- Installing a wrapper script to wrap subsequent calls of the `terraform` binary and expose its STDOUT, STDERR, and exit code as outputs named `stdout`, `stderr`, and `exitcode` respectively. (This can be optionally skipped if subsequent steps in the same job do not need to access the results of Terraform commands.)
+- Downloading a specific version of Packer CLI and adding it to the `PATH`.
+- Installing a wrapper script to wrap subsequent calls of the `packer` binary and expose its STDOUT, STDERR, and exit code as outputs named `stdout`, `stderr`, and `exitcode` respectively. (This can be optionally skipped if subsequent steps in the same job do not need to access the results of Packer commands.)
 
-After you've used the action, subsequent steps in the same job can run arbitrary Terraform commands using [the GitHub Actions `run` syntax](https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstepsrun). This allows most Terraform commands to work exactly like they do on your local command line.
+After you've used the action, subsequent steps in the same job can run arbitrary Packer commands using [the GitHub Actions `run` syntax](https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstepsrun). This allows most Packer commands to work exactly like they do on your local command line.
 
 ## Usage
 
 This action can be run on `ubuntu-latest`, `windows-latest`, and `macos-latest` GitHub Actions runners. When running on `windows-latest` the shell should be set to Bash.
 
-The default configuration installs the latest version of Terraform CLI and installs the wrapper script to wrap subsequent calls to the `terraform` binary.
+The default configuration installs the latest version of Packer CLI and installs the wrapper script to wrap subsequent calls to the `packer` binary.
 
 ```yaml
 steps:
-- uses: hashicorp/setup-terraform@v1
+- uses: tniswong/setup-packer@v1
 ```
 
-A specific version of Terraform CLI can be installed.
+A specific version of Packer CLI can be installed.
 
 ```yaml
 steps:
-- uses: hashicorp/setup-terraform@v1
+- uses: tniswong/setup-packer@v1
   with:
-    terraform_version: 0.12.25
-```
-
-Credentials for Terraform Cloud (app.terraform.io) can be configured.
-
-```yaml
-steps:
-- uses: hashicorp/setup-terraform@v1
-  with:
-    cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
-```
-
-Credentials for Terraform Enterprise can be configured.
-
-```yaml
-steps:
-- uses: hashicorp/setup-terraform@v1
-  with:
-    cli_config_credentials_hostname: 'terraform.example.com'
-    cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+    packer_version: 1.6.0
 ```
 
 The wrapper script installation can be skipped.
 
 ```yaml
 steps:
-- uses: hashicorp/setup-terraform@v1
+- uses: tniswong/setup-packer@v1
   with:
-    terraform_wrapper: false
+    packer_wrapper: false
 ```
 
 Subsequent steps can access outputs when the wrapper script is installed.
@@ -66,12 +46,12 @@ Subsequent steps can access outputs when the wrapper script is installed.
 
 ```yaml
 steps:
-- uses: hashicorp/setup-terraform@v1
+- uses: tniswong/setup-packer@v1
 
-- run: terraform init
+- run: packer verify
 
 - id: plan
-  run: terraform plan -no-color
+  run: packer plan -no-color
 
 - run: echo ${{ steps.plan.outputs.stdout }}
 - run: echo ${{ steps.plan.outputs.stderr }}
@@ -86,37 +66,37 @@ defaults:
     working-directory: ${{ env.tf_actions_working_dir }}
 steps:
 - uses: actions/checkout@v2
-- uses: hashicorp/setup-terraform@v1
+- uses: tniswong/setup-packer@v1
 
-- name: Terraform fmt
+- name: Packer fmt
   id: fmt
-  run: terraform fmt
+  run: packer fmt
   continue-on-error: true
 
-- name: Terraform Init
+- name: Packer Init
   id: init
-  run: terraform init
+  run: packer init
 
-- name: Terraform Validate
+- name: Packer Validate
   id: validate
-  run: terraform validate -no-color
+  run: packer validate -no-color
 
-- name: Terraform Plan
+- name: Packer Plan
   id: plan
-  run: terraform plan -no-color
+  run: packer plan -no-color
   continue-on-error: true
 
 - uses: actions/github-script@0.9.0
   if: github.event_name == 'pull_request'
   env:
-    PLAN: "terraform\n${{ steps.plan.outputs.stdout }}"
+    PLAN: "packer\n${{ steps.plan.outputs.stdout }}"
   with:
     github-token: ${{ secrets.GITHUB_TOKEN }}
     script: |
-      const output = `#### Terraform Format and Style 🖌\`${{ steps.fmt.outcome }}\`
-      #### Terraform Initialization ⚙️\`${{ steps.init.outcome }}\`
-      #### Terraform Validation 🤖${{ steps.validate.outputs.stdout }}
-      #### Terraform Plan 📖\`${{ steps.plan.outcome }}\`
+      const output = `#### Packer Format and Style 🖌\`${{ steps.fmt.outcome }}\`
+      #### Packer Initialization ⚙️\`${{ steps.init.outcome }}\`
+      #### Packer Validation 🤖${{ steps.validate.outputs.stdout }}
+      #### Packer Plan 📖\`${{ steps.plan.outcome }}\`
       
       <details><summary>Show Plan</summary>
       
@@ -138,28 +118,28 @@ steps:
 
 The following inputs are supported.
 
-- `cli_config_credentials_hostname` - (optional) The hostname of a Terraform Cloud/Enterprise instance to place within the credentials block of the Terraform CLI configuration file. Defaults to `app.terraform.io`.
+- `cli_config_credentials_hostname` - (optional) The hostname of a Packer Cloud/Enterprise instance to place within the credentials block of the Packer CLI configuration file. Defaults to `app.packer.io`.
 
-- `cli_config_credentials_token` - (optional) The API token for a Terraform Cloud/Enterprise instance to place within the credentials block of the Terraform CLI configuration file.
+- `cli_config_credentials_token` - (optional) The API token for a Packer Cloud/Enterprise instance to place within the credentials block of the Packer CLI configuration file.
 
-- `terraform_version` - (optional) The version of Terraform CLI to install. A value of `latest` will install the latest version of Terraform CLI. Defaults to `latest`.
+- `packer_version` - (optional) The version of Packer CLI to install. A value of `latest` will install the latest version of Packer CLI. Defaults to `latest`.
 
-- `terraform_wrapper` - (optional) Whether or not to install a wrapper to wrap subsequent calls of the `terraform` binary and expose its STDOUT, STDERR, and exit code as outputs named `stdout`, `stderr`, and `exitcode` respectively. Defaults to `true`.
+- `packer_wrapper` - (optional) Whether or not to install a wrapper to wrap subsequent calls of the `packer` binary and expose its STDOUT, STDERR, and exit code as outputs named `stdout`, `stderr`, and `exitcode` respectively. Defaults to `true`.
 
 ## Outputs
 
-This action does not configure any outputs directly. However, when the `terraform_wrapper` input is set to `true`, the following outputs will be available for subsequent steps that call the `terraform` binary.
+This action does not configure any outputs directly. However, when the `packer_wrapper` input is set to `true`, the following outputs will be available for subsequent steps that call the `packer` binary.
 
-- `stdout` - The STDOUT stream of the call to the `terraform` binary.
+- `stdout` - The STDOUT stream of the call to the `packer` binary.
 
-- `stderr` - The STDERR stream of the call to the `terraform` binary.
+- `stderr` - The STDERR stream of the call to the `packer` binary.
 
-- `exitcode` - The exit code of the call to the `terraform` binary.
+- `exitcode` - The exit code of the call to the `packer` binary.
 
 ## License
 
-[Mozilla Public License v2.0](https://github.com/hashicorp/setup-terraform/blob/master/LICENSE)
+[Mozilla Public License v2.0](https://github.com/tniswong/setup-packer/blob/master/LICENSE)
 
 ## Code of Conduct
 
-[Code of Conduct](https://github.com/hashicorp/setup-terraform/blob/master/CODE_OF_CONDUCT.md)
+[Code of Conduct](https://github.com/tniswong/setup-packer/blob/master/CODE_OF_CONDUCT.md)
