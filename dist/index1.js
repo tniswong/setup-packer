@@ -1504,7 +1504,7 @@ async function checkPacker () {
 }
 
 (async () => {
-  // This will fail if Terraform isn't found, which is what we want
+  // This will fail if Packer isn't found, which is what we want
   await checkPacker();
 
   // Create listeners to receive output (in memory) as well
@@ -1594,7 +1594,7 @@ module.exports = (() => {
   // If we're on Windows, then the executable ends with .exe
   const exeSuffix = os.platform().startsWith('win') ? '.exe' : '';
 
-  return [process.env.PACKER_CLI_PATH, `terraform-bin${exeSuffix}`].join(path.sep);
+  return [process.env.PACKER_CLI_PATH, `packer-bin${exeSuffix}`].join(path.sep);
 })();
 
 
