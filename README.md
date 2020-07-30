@@ -48,14 +48,14 @@ Subsequent steps can access outputs when the wrapper script is installed.
 steps:
 - uses: tniswong/setup-packer@v1
 
-- run: packer verify
+- run: packer validate
 
-- id: verify
-  run: packer verify
+- id: validate
+  run: packer validate
 
-- run: echo ${{ steps.verify.outputs.stdout }}
-- run: echo ${{ steps.verify.outputs.stderr }}
-- run: echo ${{ steps.verify.outputs.exitcode }}
+- run: echo ${{ steps.validate.outputs.stdout }}
+- run: echo ${{ steps.validate.outputs.stderr }}
+- run: echo ${{ steps.validate.outputs.exitcode }}
 ```
 
 ## Inputs
