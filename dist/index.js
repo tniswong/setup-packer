@@ -1250,7 +1250,6 @@ module.exports = SemVer
 /***/ (function(module, __unusedexports, __webpack_require__) {
 
 // Node.js core
-const fs = __webpack_require__(747).promises;
 const os = __webpack_require__(87);
 const path = __webpack_require__(622);
 
@@ -1387,41 +1386,10 @@ async function installWrapper (pathToCLI) {
   core.exportVariable('PACKER_CLI_PATH', pathToCLI);
 }
 
-// Add credentials to CLI Configuration File
-// https://www.packer.io/docs/commands/cli-config.html
-async function addCredentials (credentialsHostname, credentialsToken, osPlat) {
-  // format HCL block
-  // eslint-disable
-  const creds = `
-credentials "${credentialsHostname}" {
-  token = "${credentialsToken}"
-}`.trim();
-  // eslint-enable
-
-  // default to OS-specific path
-  let credsFile = osPlat === 'win32'
-    ? `${process.env.APPDATA}/packer.rc`
-    : `${process.env.HOME}/.packerrc`;
-
-  // override with TF_CLI_CONFIG_FILE environment variable
-  credsFile = process.env.TF_CLI_CONFIG_FILE ? process.env.TF_CLI_CONFIG_FILE : credsFile;
-
-  // get containing folder
-  const credsFolder = path.dirname(credsFile);
-
-  core.debug(`Creating ${credsFolder}`);
-  await io.mkdirP(credsFolder);
-
-  core.debug(`Adding credentials to ${credsFile}`);
-  await fs.writeFile(credsFile, creds);
-}
-
 async function run () {
   try {
     // Gather GitHub Actions inputs
     const version = core.getInput('packer_version');
-    const credentialsHostname = core.getInput('cli_config_credentials_hostname');
-    const credentialsToken = core.getInput('cli_config_credentials_token');
     const wrapper = core.getInput('packer_wrapper') === 'true';
 
     // Gather OS details
@@ -1447,11 +1415,6 @@ async function run () {
 
     // Add to path
     core.addPath(pathToCLI);
-
-    // Add credentials to file if they are provided
-    if (credentialsHostname && credentialsToken) {
-      await addCredentials(credentialsHostname, credentialsToken, osPlat);
-    }
   } catch (error) {
     core.error(error);
     throw new Error(error);
