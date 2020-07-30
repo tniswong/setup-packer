@@ -1,5 +1,4 @@
-#!/usr/bin/env node
-module.exports =
+#!/usr/bin/env nodemodule.exports =
 /******/ (function(modules, runtime) { // webpackBootstrap
 /******/ 	"use strict";
 /******/ 	// The module cache
@@ -35,7 +34,7 @@ module.exports =
 /******/ 	// the startup function
 /******/ 	function startup() {
 /******/ 		// Load entry module and return exports
-/******/ 		return __webpack_require__(950);
+/******/ 		return __webpack_require__(792);
 /******/ 	};
 /******/
 /******/ 	// run startup
@@ -949,22 +948,6 @@ module.exports = require("child_process");
 
 /***/ }),
 
-/***/ 187:
-/***/ (function(module, __unusedexports, __webpack_require__) {
-
-const os = __webpack_require__(87);
-const path = __webpack_require__(622);
-
-module.exports = (() => {
-  // If we're on Windows, then the executable ends with .exe
-  const exeSuffix = os.platform().startsWith('win') ? '.exe' : '';
-
-  return [process.env.TERRAFORM_CLI_PATH, `terraform-bin${exeSuffix}`].join(path.sep);
-})();
-
-
-/***/ }),
-
 /***/ 357:
 /***/ (function(module) {
 
@@ -1503,6 +1486,61 @@ module.exports = require("fs");
 
 /***/ }),
 
+/***/ 792:
+/***/ (function(__unusedmodule, __unusedexports, __webpack_require__) {
+
+
+const io = __webpack_require__(1);
+const core = __webpack_require__(470);
+const { exec } = __webpack_require__(986);
+
+const OutputListener = __webpack_require__(831);
+const pathToCLI = __webpack_require__(850);
+
+async function checkPacker () {
+  // Setting check to `true` will cause `which` to throw if packer isn't found
+  const check = true;
+  return io.which(pathToCLI, check);
+}
+
+(async () => {
+  // This will fail if Terraform isn't found, which is what we want
+  await checkPacker();
+
+  // Create listeners to receive output (in memory) as well
+  const stdout = new OutputListener();
+  const stderr = new OutputListener();
+  const listeners = {
+    stdout: stdout.listener,
+    stderr: stderr.listener
+  };
+
+  // Execute packer and capture output
+  const args = process.argv.slice(2);
+  const options = {
+    listeners,
+    ignoreReturnCode: true
+  };
+  const exitCode = await exec(pathToCLI, args, options);
+  core.debug(`Packer exited with code ${exitCode}.`);
+  core.debug(`stdout: ${stdout.contents}`);
+  core.debug(`stderr: ${stderr.contents}`);
+  core.debug(`exitcode: ${exitCode}`);
+
+  // Set outputs, result, exitcode, and stderr
+  core.setOutput('stdout', stdout.contents);
+  core.setOutput('stderr', stderr.contents);
+  core.setOutput('exitcode', exitCode.toString(10));
+
+  // A non-zero exitCode is considered an error
+  if (exitCode !== 0) {
+    core.setFailed(`Packer exited with code ${exitCode}.`);
+  }
+})();
+
+
+/***/ }),
+
 /***/ 831:
 /***/ (function(module) {
 
@@ -1546,55 +1584,17 @@ module.exports = OutputListener;
 
 /***/ }),
 
-/***/ 950:
-/***/ (function(__unusedmodule, __unusedexports, __webpack_require__) {
+/***/ 850:
+/***/ (function(module, __unusedexports, __webpack_require__) {
 
-const io = __webpack_require__(1);
-const core = __webpack_require__(470);
-const { exec } = __webpack_require__(986);
+const os = __webpack_require__(87);
+const path = __webpack_require__(622);
 
-const OutputListener = __webpack_require__(831);
-const pathToCLI = __webpack_require__(187);
+module.exports = (() => {
+  // If we're on Windows, then the executable ends with .exe
+  const exeSuffix = os.platform().startsWith('win') ? '.exe' : '';
 
-async function checkTerraform () {
-  // Setting check to `true` will cause `which` to throw if terraform isn't found
-  const check = true;
-  return io.which(pathToCLI, check);
-}
-
-(async () => {
-  // This will fail if Terraform isn't found, which is what we want
-  await checkTerraform();
-
-  // Create listeners to receive output (in memory) as well
-  const stdout = new OutputListener();
-  const stderr = new OutputListener();
-  const listeners = {
-    stdout: stdout.listener,
-    stderr: stderr.listener
-  };
-
-  // Execute terraform and capture output
-  const args = process.argv.slice(2);
-  const options = {
-    listeners,
-    ignoreReturnCode: true
-  };
-  const exitCode = await exec(pathToCLI, args, options);
-  core.debug(`Terraform exited with code ${exitCode}.`);
-  core.debug(`stdout: ${stdout.contents}`);
-  core.debug(`stderr: ${stderr.contents}`);
-  core.debug(`exitcode: ${exitCode}`);
-
-  // Set outputs, result, exitcode, and stderr
-  core.setOutput('stdout', stdout.contents);
-  core.setOutput('stderr', stderr.contents);
-  core.setOutput('exitcode', exitCode.toString(10));
-
-  // A non-zero exitCode is considered an error
-  if (exitCode !== 0) {
-    core.setFailed(`Terraform exited with code ${exitCode}.`);
-  }
+  return [process.env.PACKER_CLI_PATH, `terraform-bin${exeSuffix}`].join(path.sep);
 })();
 
 
