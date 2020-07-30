@@ -13,7 +13,7 @@ async function checkPacker () {
 }
 
 (async () => {
-  // This will fail if Terraform isn't found, which is what we want
+  // This will fail if Packer isn't found, which is what we want
   await checkPacker();
 
   // Create listeners to receive output (in memory) as well
